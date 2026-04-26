@@ -1,0 +1,8 @@
+.DS_Store
+node_modules/
+old/
+exposure-sweep*/
+*.jpg
+*.jpeg
+*.png
+*.csv

@@ -1,0 +1,13 @@
+{
+  "name": "spectrometer",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Web-based spectrometer for Little Garden / Miyee 340-1050nm DIY UVC spectrometers",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "usb": "^2.17.0"
+  }
+}

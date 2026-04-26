@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spectrometer</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/uplot@1.6.31/dist/uPlot.min.css" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="banner" class="banner hidden"></div>
+
+  <main>
+    <section class="video-pane">
+      <div class="video-wrap">
+        <video id="video" autoplay playsinline muted></video>
+        <div id="video-frame" class="video-frame"></div>
+        <div id="row-marker" class="row-marker" title="Drag to choose the spectrum sample row"></div>
+      </div>
+    </section>
+
+    <section class="plot-pane">
+      <div id="plot"></div>
+      <div id="plot-cursor-info" class="plot-cursor-info"></div>
+    </section>
+
+    <aside class="controls-pane">
+      <div id="status" class="status sidebar-status">
+        <span id="status-server" class="badge badge-pending">checking server…</span>
+        <span id="status-camera" class="badge badge-pending">no camera</span>
+        <button id="theme-toggle" class="badge theme-toggle" title="Toggle light/dark mode">Light</button>
+      </div>
+
+      <h2 class="section-spec">Capture</h2>
+      <div class="video-controls sidebar-video-controls">
+        <div class="capture-power">
+          <button id="capture-start" class="reset-btn" disabled>Start</button>
+          <button id="capture-stop"  class="reset-btn">Stop</button>
+        </div>
+        <label>Camera
+          <select id="device-select"></select>
+        </label>
+        <label>Sample row
+          <input type="range" id="row-slider" min="0" max="100" value="50" />
+          <span id="row-value">50%</span>
+        </label>
+        <label>Row band height
+          <input type="range" id="band-slider" min="1" max="40" value="7" />
+          <span id="band-value">7 px</span>
+        </label>
+        <button id="auto-row" class="auto-btn" title="Auto-detect brightest row and band height">Auto</button>
+      </div>
+      <div class="spec-section capture-extras">
+        <label class="spec-row">
+          <span class="spec-label">Frame averaging</span>
+          <input type="range" id="frame-avg" min="1" max="30" step="1" value="10" />
+          <span class="spec-value" id="frame-avg-value">10</span>
+        </label>
+        <label class="spec-row">
+          <span class="spec-label">Crop start</span>
+          <input type="range" id="col-crop-min" min="0" max="100" step="0.1" value="0" />
+          <span class="spec-value" id="col-crop-min-value">0 px</span>
+        </label>
+        <label class="spec-row">
+          <span class="spec-label">Crop end</span>
+          <input type="range" id="col-crop-max" min="0" max="100" step="0.1" value="100" />
+          <span class="spec-value" id="col-crop-max-value">— px</span>
+        </label>
+        <label class="overlay-toggle">
+          <input type="checkbox" id="flip-horizontal" />
+          <span>Flip horizontally (mirror spectrum)</span>
+        </label>
+        <label class="overlay-toggle">
+          <input type="checkbox" id="hide-camera-view" />
+          <span>Hide camera preview</span>
+        </label>
+      </div>
+
+      <div id="camera-controls-section">
+        <h2>Camera controls</h2>
+
+        <div class="controls-header">
+          <div class="view-toggle">
+            <button id="view-simple" class="active" disabled>Simple</button>
+            <button id="view-advanced" disabled>Advanced</button>
+          </div>
+          <button id="reset-defaults" class="reset-btn" disabled title="Reset every control to the firmware's stored default (UVC GET_DEF)">Reset</button>
+        </div>
+
+        <div id="simple-view" class="view-pane">
+          <div class="mode-toggle">
+            <button id="mode-manual" disabled>Manual</button>
+            <button id="mode-auto" disabled>Auto</button>
+          </div>
+          <button id="spectrometer-preset" class="reset-btn full" disabled
+                  title="Apply lgscli's defaults for spectrometer use: manual exposure ~20ms, WB off, contrast 20, sharpness 1">
+            Spectrometer preset
+          </button>
+          <div id="simple-exposure-slot"></div>
+        </div>
+
+        <div id="advanced-view" class="view-pane hidden">
+          <div id="controls-list"></div>
+        </div>
+
+        <p class="hint" id="controls-hint">Run <code>node server.mjs</code> in the project folder to enable manual exposure and other UVC controls.</p>
+      </div>
+
+      <h2 class="section-spec">Calibration</h2>
+      <div class="spec-section">
+        <button id="enter-cal-mode" class="reset-btn full">Visual calibration (fluorescent peaks)</button>
+        <button id="enter-cal-fraunhofer" class="reset-btn full">Visual calibration (Fraunhofer / sky)</button>
+        <button id="enter-cal-amplitude" class="reset-btn full">Amplitude calibration (blackbody lamp)</button>
+
+        <div id="cal-mode-controls" class="cal-mode-controls hidden">
+          <p class="manual-cal-hint" id="cal-mode-hint">X-axis is in pixels. Drag each labeled peak marker to the corresponding peak in the spectrum, then Apply.</p>
+
+          <div id="cal-fluo-view-toggle" class="view-toggle hidden">
+            <button id="cal-view-auto" class="active">Auto</button>
+            <button id="cal-view-manual">Manual</button>
+          </div>
+
+          <div id="cal-auto-pane" class="hidden">
+            <button id="cal-auto-rerun" class="reset-btn">Re-detect peaks</button>
+            <div id="cal-auto-summary" class="cal-auto-summary"></div>
+          </div>
+
+          <div id="cal-manual-pane">
+            <div class="cal-mode-overlay-toggles">
+              <label class="overlay-toggle">
+                <input type="checkbox" id="cal-show-peaks" checked />
+                <span id="cal-show-peaks-label">Show expected peaks</span>
+              </label>
+            </div>
+            <div class="cal-anchor-grid" id="cal-anchor-grid"></div>
+          </div>
+
+          <div id="cal-amplitude-pane" class="hidden">
+            <label class="spec-row">
+              <span class="spec-label">Lamp temperature</span>
+              <input type="number" id="cal-amp-temperature" min="1000" max="10000" step="50" value="2600" />
+              <span class="spec-value">K</span>
+            </label>
+            <label class="spec-row">
+              <span class="spec-label">Save as</span>
+              <input type="text" id="cal-amp-name" placeholder="e.g. tungsten on diffuser" />
+              <span class="spec-value"></span>
+            </label>
+          </div>
+
+          <div class="cal-mode-buttons">
+            <button id="apply-cal-mode" class="reset-btn">Apply</button>
+            <button id="cancel-cal-mode" class="reset-btn">Cancel</button>
+          </div>
+        </div>
+
+        <div id="calibration-status" class="cal-status">Not calibrated · pixel axis</div>
+        <button id="reset-calibration" class="link-btn" hidden>Clear calibration</button>
+
+        <label class="spec-row" id="amplitude-cal-select-row" hidden>
+          <span class="spec-label">Active correction</span>
+          <select id="amplitude-cal-select"></select>
+          <span class="spec-value"></span>
+        </label>
+        <label class="overlay-toggle" id="amplitude-enabled-row" hidden>
+          <input type="checkbox" id="amplitude-enabled" checked />
+          <span>Apply amplitude correction</span>
+        </label>
+        <div id="amplitude-status" class="cal-status">No amplitude correction</div>
+        <button id="reset-amplitude" class="link-btn" hidden>Delete this amplitude calibration</button>
+      </div>
+
+      <h2 class="section-spec">Spectrum display</h2>
+      <div class="spec-section">
+        <label class="overlay-toggle">
+          <input type="checkbox" id="show-rgb" />
+          <span>Show R / G / B channels separately</span>
+        </label>
+        <label class="overlay-toggle">
+          <input type="checkbox" id="linearize-sensor" />
+          <span title="Map gamma-encoded camera output back to scene-linear light. Required for amplitude correction to be physically meaningful.">Linearize sensor (inverse sRGB EOTF, like lgscli)</span>
+        </label>
+        <div id="overlay-toggles" class="hidden">
+          <label class="overlay-toggle">
+            <input type="checkbox" id="show-fluo-overlay" />
+            <span>Mark known emission lines (Hg / Tb / Eu)</span>
+          </label>
+          <label class="overlay-toggle">
+            <input type="checkbox" id="show-fraunhofer" />
+            <span>Show Fraunhofer absorption lines</span>
+          </label>
+          <label class="overlay-toggle blackbody-row">
+            <input type="checkbox" id="show-blackbody" />
+            <span>Show blackbody at</span>
+            <input type="number" id="blackbody-temp" min="1000" max="10000" step="50" value="2600" />
+            <span>K</span>
+          </label>
+          <div class="blackbody-presets">
+            <button type="button" class="bb-preset-btn" data-temp="2600" title="Tungsten incandescent (~60 W bulb at rated voltage), lgscli's default for tungsten reference">Tungsten · 2600 K</button>
+            <button type="button" class="bb-preset-btn" data-temp="3000" title="Tungsten halogen (e.g. 12 V 50 W GU5.3 'bead' bulb), lgscli's default for halogen reference">Halogen · 3000 K</button>
+            <button type="button" class="bb-preset-btn" data-temp="5778" title="Effective surface temperature of the Sun (photosphere)">Sun · 5778 K</button>
+          </div>
+          <label class="overlay-toggle blackbody-sub">
+            <input type="checkbox" id="blackbody-fit-measured" />
+            <span title="Closed-form least-squares fit through the origin: s = Σ(p·y)/Σ(p²) over all visible measured points. Distributes residuals across the spectrum instead of pinning a single point — robust to a noisy or saturated peak.">Least-squares fit to measurement</span>
+          </label>
+        </div>
+      </div>
+
+      <h2 class="section-spec">Saved spectra</h2>
+      <div class="spec-section">
+        <div class="save-row">
+          <input type="text" id="save-name" placeholder="Measurement name (optional)" />
+          <button id="save-spectrum" class="reset-btn">Save</button>
+        </div>
+        <label class="overlay-toggle">
+          <input type="checkbox" id="hide-current-spectrum" />
+          <span>Hide current spectrum</span>
+        </label>
+        <label class="overlay-toggle">
+          <input type="checkbox" id="peak-normalize" />
+          <span>Peak-normalize (compare shapes)</span>
+        </label>
+        <div id="saved-list" class="saved-list"></div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/uplot@1.6.31/dist/uPlot.iife.min.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
