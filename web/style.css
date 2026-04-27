@@ -461,6 +461,46 @@ main { position: relative; }
 .control-row input[type=range] { width: 100%; }
 .control-row select { width: 100%; }
 .control-row .desc { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+.exposure-step-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  margin-top: 0.45rem;
+}
+.exposure-step-btn {
+  padding: 0.28rem 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+}
+.exposure-step-btn:hover {
+  color: var(--fg);
+  border-color: var(--accent);
+}
+.exposure-split-label,
+.exposure-gain-control {
+  margin-top: 0.55rem;
+}
+.exposure-split-label,
+.exposure-gain-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.2rem;
+}
+.exposure-split-value,
+.exposure-gain-value {
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+.exposure-split-slider,
+.exposure-gain-slider {
+  width: 100%;
+}
 
 .value-input {
   background: var(--bg);

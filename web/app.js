@@ -80,30 +80,44 @@ const FLUO_PEAKS = [
   // peak around 870 nm in CFL spectra captured with this kit.
   { wavelength: 871.6, label: '871.6', element: 'Hg', intensity: 0.20, fwhm: 1.5 },
 ];
-// Fraunhofer lines tuned for what a typical IR-cut-removed webcam actually
-// sees — `depth` is the fractional dip the user can expect (0..1), not the
-// intrinsic solar value. `fwhm` is the visible feature width in nm at this
-// kit's resolution. K/H are intrinsically very strong but the sensor's UV
-// response and lens transmission make them faint, so depth is reduced to
-// match observation.
-//
-// Used by both the absorption-line overlay (visual prominence scaled by
-// depth) and the realistic solar-curve overlay (Planck × transmittance ×
-// sensor response).
+// Fraunhofer lines for overlay / manual calibration. `depth` is the approximate
+// webcam-visible prominence (0..1), not the intrinsic solar depth. `fwhm` is
+// the visible width in nm at this kit's resolution, so close doublets still
+// render as separate labels while broad O2 bands stay visibly wider.
 const FRAUNHOFER_LINES = [
-  { wavelength: 393.4, label: 'K',    element: 'Ca II', depth: 0.20, fwhm: 1.0 },
-  { wavelength: 396.8, label: 'H',    element: 'Ca II', depth: 0.20, fwhm: 1.0 },
-  { wavelength: 430.8, label: 'G',    element: 'Fe/Ca', depth: 0.55, fwhm: 2.5 },
-  { wavelength: 486.1, label: 'Hβ',   element: 'H',     depth: 0.35, fwhm: 1.0 },
-  { wavelength: 527.0, label: 'E',    element: 'Fe',    depth: 0.10, fwhm: 0.8 },
-  // Anchor pair for visual cal: Na D and Hα are the two most reliably visible
-  // dips on a webcam, well-separated (~67 nm), and physically very different
-  // wavelengths so a 2-point fit is well-conditioned. Other lines display for
-  // reference but follow the fit; user only drags these two.
-  { wavelength: 589.3, label: 'Na D', element: 'Na',    depth: 0.55, fwhm: 1.2, anchor: true },
-  { wavelength: 656.3, label: 'Hα',   element: 'H',     depth: 0.55, fwhm: 1.2, anchor: true },
-  { wavelength: 686.7, label: 'B',    element: 'O₂',    depth: 0.40, fwhm: 3.0 },
-  { wavelength: 759.4, label: 'A',    element: 'O₂',    depth: 0.65, fwhm: 6.0 },
+  { wavelength: 299.444, label: 't',         element: 'Ni',    depth: 0.08, fwhm: 1.1 },
+  { wavelength: 302.108, label: 'T',         element: 'Fe',    depth: 0.09, fwhm: 1.1 },
+  { wavelength: 336.112, label: 'P',         element: 'Ti+',   depth: 0.10, fwhm: 1.1 },
+  { wavelength: 358.121, label: 'N',         element: 'Fe',    depth: 0.10, fwhm: 1.1 },
+  { wavelength: 382.044, label: 'L',         element: 'Fe',    depth: 0.12, fwhm: 1.0 },
+  { wavelength: 393.366, label: 'K',         element: 'Ca+',   depth: 0.20, fwhm: 1.0 },
+  { wavelength: 396.847, label: 'H',         element: 'Ca+',   depth: 0.20, fwhm: 1.0 },
+  { wavelength: 410.175, label: 'h',         element: 'Hδ',    depth: 0.18, fwhm: 1.0 },
+  { wavelength: 430.774, label: 'G',         element: 'Ca',    depth: 0.42, fwhm: 1.8 },
+  { wavelength: 430.790, label: 'G',         element: 'Fe',    depth: 0.42, fwhm: 1.8 },
+  { wavelength: 434.047, label: "G'",        element: 'Hγ',    depth: 0.24, fwhm: 1.0 },
+  { wavelength: 438.355, label: 'e',         element: 'Fe',    depth: 0.16, fwhm: 1.0 },
+  { wavelength: 466.814, label: 'd',         element: 'Fe',    depth: 0.14, fwhm: 1.0 },
+  { wavelength: 486.134, label: 'F',         element: 'Hβ',    depth: 0.35, fwhm: 1.0 },
+  { wavelength: 495.761, label: 'c',         element: 'Fe',    depth: 0.12, fwhm: 1.0 },
+  { wavelength: 516.733, label: 'b4',        element: 'Mg',    depth: 0.14, fwhm: 0.9 },
+  { wavelength: 516.891, label: 'b3',        element: 'Fe',    depth: 0.14, fwhm: 0.9 },
+  { wavelength: 517.270, label: 'b2',        element: 'Mg',    depth: 0.16, fwhm: 0.9 },
+  { wavelength: 518.362, label: 'b1',        element: 'Mg',    depth: 0.18, fwhm: 0.9 },
+  { wavelength: 527.039, label: 'E2',        element: 'Fe',    depth: 0.10, fwhm: 0.8 },
+  { wavelength: 546.073, label: 'e',         element: 'Hg',    depth: 0.10, fwhm: 0.8 },
+  // Anchor pair for visual cal: D1 and C are the two most reliably visible
+  // dips on a webcam, well-separated in wavelength, so a 2-point fit is
+  // stable. The nearby D2 / D3 lines remain as visual references.
+  { wavelength: 587.5618, label: 'D3 / d',   element: 'He',    depth: 0.16, fwhm: 1.0 },
+  { wavelength: 588.995, label: 'D2',        element: 'Na',    depth: 0.48, fwhm: 1.0 },
+  { wavelength: 589.592, label: 'D1',        element: 'Na',    depth: 0.55, fwhm: 1.0, anchor: true },
+  { wavelength: 627.661, label: 'a',         element: 'O₂',    depth: 0.14, fwhm: 2.0 },
+  { wavelength: 656.281, label: 'C',         element: 'Hα',    depth: 0.55, fwhm: 1.2, anchor: true },
+  { wavelength: 686.719, label: 'B',         element: 'O₂',    depth: 0.40, fwhm: 3.0 },
+  { wavelength: 759.370, label: 'A',         element: 'O₂',    depth: 0.65, fwhm: 6.0 },
+  { wavelength: 822.696, label: 'Z',         element: 'O₂',    depth: 0.22, fwhm: 4.0 },
+  { wavelength: 898.765, label: 'y',         element: 'O₂',    depth: 0.18, fwhm: 4.5 },
 ];
 
 let calibration = null;
@@ -2280,82 +2294,129 @@ function buildControlRow(info) {
   return row;
 }
 
-// Allowed exposure values for the simple-view slider — powers of two minus 1.
-// Built from the camera's reported [min, max] range. Each step roughly doubles
-// the exposure (like a camera f-stop), and from 2^5-1 = 31 onward each value
-// also lands at the end of one of the firmware's 32-tick blocks, so every step
-// produces a distinct actual exposure.
-let pow2ExpValues = [];
-let simpleExposureSlider = null;
+function addExposureStepButtons(row, info) {
+  if (info.name !== 'exposure') return;
+  const min = info.min ?? 0;
+  const max = info.max ?? 100;
+  const wrap = document.createElement('div');
+  wrap.className = 'exposure-step-buttons';
+  wrap.innerHTML = `
+    <button type="button" class="exposure-step-btn" data-delta="-256">-256</button>
+    <button type="button" class="exposure-step-btn" data-delta="256">+256</button>
+  `;
+  const desc = row.querySelector('.desc');
+  row.insertBefore(wrap, desc ?? null);
 
-function pow2ExpIndex(v) {
-  let best = 0, bestDiff = Infinity;
-  for (let i = 0; i < pow2ExpValues.length; i++) {
-    const d = Math.abs(pow2ExpValues[i] - v);
-    if (d < bestDiff) { bestDiff = d; best = i; }
-  }
-  return best;
+  wrap.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const num = row.querySelector('input[type=number]');
+      const current = parseInt(num?.value ?? '', 10);
+      const base = Number.isFinite(current) ? current : (info.value ?? min);
+      const delta = parseInt(btn.dataset.delta, 10);
+      const next = Math.max(min, Math.min(max, base + delta));
+      syncControl(info.name, next);
+      const result = await api.setControl(info.name, next);
+      syncControl(info.name, result?.value ?? next);
+    });
+  });
 }
 
-// Convert the simple-view exposure row's slider/number into a 2^n-1 selector.
-// We swap inputs by cloning to drop the listeners that buildControlRow
-// installed (which assume slider value === exposure value), then attach
-// our own that map slider index ↔ pow2ExpValues[index].
-function setupPow2Minus1ExposureRow(row, exposure) {
-  const min = exposure.min ?? 1;
+function highNibbleGainSortKey(high4) {
+  return (high4 & 0b1000)
+    | ((high4 & 0b0001) << 2)
+    | (high4 & 0b0010)
+    | ((high4 & 0b0100) >> 2);
+}
+
+function lowByteToGainRank(lowByte) {
+  const high4 = (lowByte >> 4) & 0x0f;
+  const low4 = lowByte & 0x0f;
+  return (highNibbleGainSortKey(high4) << 4) | low4;
+}
+
+function gainRankToLowByte(rank) {
+  const high4Key = (rank >> 4) & 0x0f;
+  const low4 = rank & 0x0f;
+  return (highNibbleGainSortKey(high4Key) << 4) | low4;
+}
+
+let simpleExposureControl = null;
+let simpleGainControl = null;
+
+function setupSplitExposureRow(row, exposure) {
+  const min = exposure.min ?? 0;
   const max = exposure.max ?? 2047;
+  const coarseMax = Math.max(0, Math.floor(max / 256) * 256);
+  row.innerHTML = `
+    <label class="exposure-split-label">
+      <span class="name">Exposure</span>
+      <span class="exposure-split-value">0</span>
+    </label>
+    <input type="range" class="exposure-split-slider" min="0" max="${coarseMax}" step="256" value="0" />
+    <div class="exposure-step-buttons">
+      <button type="button" class="exposure-step-btn" data-delta="-256">-256</button>
+      <button type="button" class="exposure-step-btn" data-delta="256">+256</button>
+    </div>
+    <label class="exposure-gain-label">
+      <span class="name">Gain</span>
+      <span class="exposure-gain-value">0</span>
+    </label>
+    <input type="range" class="exposure-gain-slider" min="0" max="255" step="1" value="0" />
+    ${exposure.desc ? `<div class="desc">${exposure.desc}</div>` : ''}
+  `;
 
-  pow2ExpValues = [];
-  for (let n = 0; n < 32; n++) {
-    const v = (1 << n) - 1;
-    if (v < Math.max(1, min)) continue;
-    if (v > max) break;
-    pow2ExpValues.push(v);
-  }
-  if (pow2ExpValues.length === 0) return; // nothing to do
+  const exposureSlider = row.querySelector('.exposure-split-slider');
+  const exposureValue = row.querySelector('.exposure-split-value');
+  const gainSlider = row.querySelector('.exposure-gain-slider');
+  const gainValue = row.querySelector('.exposure-gain-value');
+  simpleExposureControl = { slider: exposureSlider, value: exposureValue, min, max };
+  simpleGainControl = { slider: gainSlider, value: gainValue, min, max };
 
-  const oldSlider = row.querySelector('input[type=range]');
-  const oldNum    = row.querySelector('input[type=number]');
-  // Clone-replace to detach the existing change/input handlers.
-  const slider = oldSlider.cloneNode(true);
-  const num    = oldNum.cloneNode(true);
-  oldSlider.parentNode.replaceChild(slider, oldSlider);
-  oldNum.parentNode.replaceChild(num, oldNum);
+  const currentExposureValue = () => {
+    const inputs = els.controlsPane.querySelectorAll(`input[type=number][data-name="${exposure.name}"]`);
+    for (const input of inputs) {
+      const parsed = parseInt(input.value, 10);
+      if (Number.isFinite(parsed)) return parsed;
+    }
+    return exposure.value ?? min;
+  };
+  const clampExposure = (v) => Math.max(min, Math.min(max, v));
 
-  // Slider goes over indices, not raw values — so syncControl must NOT touch
-  // it directly (it would clamp e.g. 255 to max=10). Drop data-name; we keep
-  // the index in sync ourselves via a hook in syncControl.
-  slider.removeAttribute('data-name');
-  slider.min  = '0';
-  slider.max  = String(pow2ExpValues.length - 1);
-  slider.step = '1';
-  const initVal = parseInt(num.value, 10);
-  slider.value = String(pow2ExpIndex(Number.isFinite(initVal) ? initVal : pow2ExpValues[0]));
-  num.value = String(pow2ExpValues[parseInt(slider.value, 10)]);
-  simpleExposureSlider = slider;
-
-  slider.addEventListener('input', () => {
-    const v = pow2ExpValues[parseInt(slider.value, 10)];
-    syncControl(exposure.name, v);
+  exposureSlider.addEventListener('input', () => {
+    const current = currentExposureValue();
+    const next = clampExposure(parseInt(exposureSlider.value, 10) + (current & 0xff));
+    syncControl(exposure.name, next);
   });
-  slider.addEventListener('change', async () => {
-    const v = pow2ExpValues[parseInt(slider.value, 10)];
-    const result = await api.setControl(exposure.name, v);
-    syncControl(exposure.name, result?.value ?? v);
+  exposureSlider.addEventListener('change', async () => {
+    const current = currentExposureValue();
+    const next = clampExposure(parseInt(exposureSlider.value, 10) + (current & 0xff));
+    const result = await api.setControl(exposure.name, next);
+    syncControl(exposure.name, result?.value ?? next);
   });
-  num.addEventListener('input', () => {
-    syncControl(exposure.name, num.value);
+  row.querySelectorAll('.exposure-step-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const current = currentExposureValue();
+      const coarse = Math.floor(current / 256) * 256;
+      const delta = parseInt(btn.dataset.delta, 10);
+      const next = clampExposure(Math.max(0, Math.min(coarseMax, coarse + delta)) + (current & 0xff));
+      syncControl(exposure.name, next);
+      const result = await api.setControl(exposure.name, next);
+      syncControl(exposure.name, result?.value ?? next);
+    });
   });
-  num.addEventListener('change', async () => {
-    // Number input keeps step=1 so the user can fine-tune via the spinner
-    // arrows; the slider stays on the pow2-1 grid (each step ~doubles the
-    // exposure). The Sonix firmware quantises to 32-tick blocks anyway, so
-    // the actual applied value (read back via result.value) lands on the
-    // nearest multiple of 32 — that's what we display.
-    const raw = parseInt(num.value, 10);
-    if (!Number.isFinite(raw)) return;
-    const result = await api.setControl(exposure.name, raw);
-    syncControl(exposure.name, result?.value ?? raw);
+
+  gainSlider.addEventListener('input', () => {
+    const current = currentExposureValue();
+    const coarse = Math.floor(current / 256) * 256;
+    const next = clampExposure(coarse + gainRankToLowByte(parseInt(gainSlider.value, 10)));
+    syncControl(exposure.name, next);
+  });
+  gainSlider.addEventListener('change', async () => {
+    const current = currentExposureValue();
+    const coarse = Math.floor(current / 256) * 256;
+    const next = clampExposure(coarse + gainRankToLowByte(parseInt(gainSlider.value, 10)));
+    const result = await api.setControl(exposure.name, next);
+    syncControl(exposure.name, result?.value ?? next);
   });
 }
 
@@ -2373,16 +2434,23 @@ async function loadControls() {
 
   // Advanced view: every control as a slider/select/toggle.
   els.controlsList.innerHTML = '';
-  for (const c of ctrls) els.controlsList.appendChild(buildControlRow(c));
+  simpleExposureControl = null;
+  simpleGainControl = null;
+  for (const c of ctrls) {
+    const row = buildControlRow(c);
+    addExposureStepButtons(row, c);
+    els.controlsList.appendChild(row);
+  }
 
   // Simple view: only the exposure slider, shown when AE mode is manual.
   // Same data-name as the advanced one, so refreshControlValues syncs both.
   els.simpleExposureSlot.innerHTML = '';
   const exposure = ctrls.find(c => c.name === 'exposure');
   if (exposure) {
-    const row = buildControlRow(exposure);
+    const row = document.createElement('div');
+    row.className = 'control-row control-range';
     els.simpleExposureSlot.appendChild(row);
-    setupPow2Minus1ExposureRow(row, exposure);
+    setupSplitExposureRow(row, exposure);
   }
 
   applyControlGating(ctrls);
@@ -2408,11 +2476,22 @@ function syncControl(name, value) {
   root.querySelectorAll(`input[type=range][data-name="${name}"]`).forEach(s => s.value = value);
   root.querySelectorAll(`input[type=number][data-name="${name}"]`).forEach(d => d.value = value);
   root.querySelectorAll(`.value[data-name="${name}"]`).forEach(d => d.textContent = value);
-  // Simple-view exposure slider operates in index space, not raw value — keep
-  // it in sync separately so it follows changes from the advanced view too.
-  if (name === 'exposure' && simpleExposureSlider) {
+  if (name === 'exposure') {
     const v = parseInt(value, 10);
-    if (Number.isFinite(v)) simpleExposureSlider.value = String(pow2ExpIndex(v));
+    if (Number.isFinite(v)) {
+      if (simpleExposureControl) {
+        const coarse = Math.floor(v / 256) * 256;
+        simpleExposureControl.slider.value = String(coarse);
+        simpleExposureControl.value.textContent = String(coarse);
+      }
+      if (simpleGainControl) {
+        const lowByte = ((v % 256) + 256) % 256;
+        const rank = lowByteToGainRank(lowByte);
+        simpleGainControl.slider.value = String(rank);
+        simpleGainControl.value.textContent = String(lowByte);
+        simpleGainControl.value.title = `rank ${rank}`;
+      }
+    }
   }
 }
 
