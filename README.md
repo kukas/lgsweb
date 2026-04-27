@@ -1,5 +1,7 @@
 # Spectrometer
 
+![Spectrometer screenshot](docs/Screenshot%202026-04-25%20at%2019.00.39.png)
+
 Browser-based, cross-platform alternative to **Theremino Spectrometer** for the
 **Miyee 340–1050 nm** DIY spectrometer kit (also sold as **"The Little Garden"**
 by Lao Kang — see his
